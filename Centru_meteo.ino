@@ -17,65 +17,72 @@ class Centru {
   private:
       bool status;
       Adafruit_BME280 * bme;
+      byte sleepTimeS;
       
   public:
-      Centru();
+      Centru(byte);
       void setup();
       void printValues();
       void sendData();
+      void sleep();
 };
 
-Centru::Centru() {
+Centru::Centru(byte sleepTime) {
     bme = new Adafruit_BME280();
+    this->sleepTimeS = sleepTime;
 }
 
 void Centru::setup() {
     this->status = this->bme->begin();
     if (!status) {
-        Serial.println("Could not find a valid BME280 sensor, check wiring!");
+        #if DEBUG == 1
+          Serial.println(F("Could not find a valid BME280 sensor, check wiring!"));
+        #endif
         while (1);
     }
 
     WiFi.begin(NETWORK, PASSWORD);
     while (WiFi.status() != WL_CONNECTED) {
       delay(500);
-      Serial.print(".");
+      #if DEBUG == 1
+        Serial.print(F("."));
+      #endif
     }
-  
-    Serial.println("");
-    Serial.println("WiFi connected");  
-    Serial.println("IP address: ");
-    Serial.println(WiFi.localIP());
-}
 
-void Centru::printValues() {
     #if DEBUG == 1
-      Serial.print(F("Temperature = "));
-      Serial.print(bme->readTemperature());
-      Serial.println(F(" *C"));
-  
-      Serial.print(F("Pressure = "));
-  
-      Serial.print(bme->readPressure() / 100.0F);
-      Serial.println(F(" hPa"));
-  
-      Serial.print(F("Approx. Altitude = "));
-      Serial.print(bme->readAltitude(SEALEVELPRESSURE_HPA));
-      Serial.println(F(" m"));
-  
-      Serial.print(F("Humidity = "));
-      Serial.print(bme->readHumidity());
-      Serial.println(F(" %"));
-  
-      Serial.println();
+      Serial.println(F(""));
+      Serial.println(F("WiFi connected"));  
+      Serial.println(F("IP address: "));
+      Serial.println(WiFi.localIP());
     #endif
 }
 
+void Centru::printValues() {
+    Serial.print(F("Temperature = "));
+    Serial.print(bme->readTemperature());
+    Serial.println(F(" *C"));
+  
+    Serial.print(F("Pressure = "));
+  
+    Serial.print(bme->readPressure() / 100.0F);
+    Serial.println(F(" hPa"));
+  
+    Serial.print(F("Approx. Altitude = "));
+    Serial.print(bme->readAltitude(SEALEVELPRESSURE_HPA));
+    Serial.println(F(" m"));
+  
+    Serial.print(F("Humidity = "));
+    Serial.print(bme->readHumidity());
+    Serial.println(F(" %"));
+  
+    Serial.println();
+}
+
 void Centru::sendData() {
-    delay(20000);
+    //delay(20000);
     #if DEBUG == 1
-    Serial.print("connecting to ");
-    Serial.println(host);
+      Serial.print(F("connecting to "));
+      Serial.println(host);
     #endif
     
     // Use WiFiClient class to create TCP connections
@@ -83,7 +90,7 @@ void Centru::sendData() {
     const int httpPort = 80;
     if (!client.connect(host, httpPort)) {
       #if DEBUG == 1
-      Serial.println("connection failed");
+        Serial.println("connection failed");
       #endif
       return;
     }
@@ -92,9 +99,10 @@ void Centru::sendData() {
     String url = "/weatherstation/updateweatherstation.php?dateutc=now&ID=IBUCHARE82&PASSWORD=iuiqtmdp&action=updateraw";
     url += "&indoorhumidity=" + String(this->bme->readHumidity());
     url += "&indoortempf=" + String(this->bme->readTemperature());
+    
     #if DEBUG == 1
-    Serial.print("Requesting URL: ");
-    Serial.println(url);
+      Serial.print(F("Requesting URL: "));
+      Serial.println(url);
     #endif
     
     // This will send the request to the server
@@ -105,7 +113,7 @@ void Centru::sendData() {
     while (client.available() == 0) {
       if (millis() - timeout > 5000) {
         #if DEBUG == 1
-        Serial.println(">>> Client Timeout !");
+          Serial.println(F(">>> Client Timeout !"));
         #endif
         client.stop();
         return;
@@ -116,31 +124,47 @@ void Centru::sendData() {
     while(client.available()){
       String line = client.readStringUntil('\r');
       #if DEBUG == 1
-      Serial.print(line);
+        Serial.print(line);
       #endif
     }
 
     #if DEBUG == 1
-    Serial.println();
-    Serial.println("closing connection");
+      Serial.println();
+      Serial.println(F("closing connection"));
     #endif
 }
 
-Centru * c = new Centru();
+void Centru::sleep() {
+    #if DEBUG == 1
+       Serial.println(F("Putting ESP to sleep ..."));
+    #endif
+    ESP.deepSleep(this->sleepTimeS * 1000000);
+}
+
+Centru * c = new Centru(15);
 unsigned long delayTime;
 
 void setup() {
-    Serial.begin(9600);
+    #if DEBUG == 1
+      Serial.begin(9600);
+    #endif
+    
     c->setup();
     delayTime = 1000;
-    Serial.println();
+    
+    #if DEBUG == 1
+      Serial.println();
+    #endif
 }
 
 
 void loop() { 
-    c->printValues();
-    c->sendData();
+    #if DEBUG == 1
+      c->printValues();
+    #endif
     delay(delayTime);
+    c->sendData();
+    c->sleep();
 }
 
 
