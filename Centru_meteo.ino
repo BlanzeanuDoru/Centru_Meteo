@@ -7,7 +7,7 @@
 #include <Adafruit_BME280.h>
 
 #define SEALEVELPRESSURE_HPA (1013.25)
-#define DEBUG 1
+#define DEBUG 0
 
 const char * NETWORK = "netis";
 const char * PASSWORD = "parolaestegrea";
@@ -141,7 +141,7 @@ void Centru::sleep() {
     ESP.deepSleep(this->sleepTimeS * 1000000);
 }
 
-Centru * c = new Centru(15);
+Centru * c = new Centru(60);
 unsigned long delayTime;
 
 void setup() {
