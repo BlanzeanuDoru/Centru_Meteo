@@ -94,11 +94,13 @@ void Centru::sendData() {
       #endif
       return;
     }
+
+    String temp = String(9/5.0 * this->bme->readTemperature() + 32.0);
     
     // We now create a URI for the request
-    String url = "/weatherstation/updateweatherstation.php?dateutc=now&ID=IBUCHARE82&PASSWORD=iuiqtmdp&action=updateraw";
-    url += "&indoorhumidity=" + String(this->bme->readHumidity());
-    url += "&indoortempf=" + String(this->bme->readTemperature());
+    String url = "/weatherstation/updateweatherstation.php?ID=IBUCHARE82&PASSWORD=iuiqtmdp&dateutc=now&action=updateraw";
+    url += "&humidity=" + String(this->bme->readHumidity());
+    url += "&tempf=" + temp;
     
     #if DEBUG == 1
       Serial.print(F("Requesting URL: "));
@@ -139,6 +141,7 @@ void Centru::sleep() {
        Serial.println(F("Putting ESP to sleep ..."));
     #endif
     ESP.deepSleep(this->sleepTimeS * 1000000);
+    //delay(this->sleepTimeS * 1000);
 }
 
 Centru * c = new Centru(60);
