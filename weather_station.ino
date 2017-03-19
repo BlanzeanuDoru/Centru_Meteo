@@ -17,17 +17,17 @@ class Centru {
   private:
       bool status;
       Adafruit_BME280 * bme;
-      byte sleepTimeS;
+      int sleepTimeS;
       
   public:
-      Centru(byte);
+      Centru(int);
       void setup();
       void printValues();
       void sendData();
       void sleep();
 };
 
-Centru::Centru(byte sleepTime) {
+Centru::Centru(int sleepTime) {
     bme = new Adafruit_BME280();
     this->sleepTimeS = sleepTime;
 }
