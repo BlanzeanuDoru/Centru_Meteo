@@ -96,11 +96,15 @@ void Centru::sendData() {
     }
 
     String temp = String(9/5.0 * this->bme->readTemperature() + 32.0);
+    String pressure = String(this->bme->readPressure() * 29.92 / 101325);
+    String dew = String(9/5.0 * (this->bme->readTemperature() -  (100.0 - this->bme->readHumidity()) /5.0) + 32.0);
     
     // We now create a URI for the request
     String url = "/weatherstation/updateweatherstation.php?ID=IBUCHARE82&PASSWORD=iuiqtmdp&dateutc=now&action=updateraw";
     url += "&humidity=" + String(this->bme->readHumidity());
     url += "&tempf=" + temp;
+    url += "&baromin=" + pressure;
+    url += "&dewptf=" + dew; 
     
     #if DEBUG == 1
       Serial.print(F("Requesting URL: "));
@@ -144,7 +148,7 @@ void Centru::sleep() {
     //delay(this->sleepTimeS * 1000);
 }
 
-Centru * c = new Centru(60);
+Centru * c = new Centru(900);
 unsigned long delayTime;
 
 void setup() {
