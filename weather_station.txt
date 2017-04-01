@@ -1,2 +1,5 @@
 In adafruit_BME280.cpp
 Wire.begin(int sda, int scl)
+For adruino ethernet use Wire.begin() - A4(SDA), A5(SCL)
+
+For FTDI232 be careful to select 3.3V when programming FTDI.
