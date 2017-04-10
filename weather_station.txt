@@ -3,3 +3,6 @@ Wire.begin(int sda, int scl)
 For adruino ethernet use Wire.begin() - A4(SDA), A5(SCL)
 
 For FTDI232 be careful to select 3.3V when programming FTDI.
+
+https://harizanov.com/2012/04/rfm12b-and-arduino-ethernet-with-wiznet5100-chip/
+To make RFM12B work with ethernet
