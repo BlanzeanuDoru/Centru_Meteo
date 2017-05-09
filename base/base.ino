@@ -37,10 +37,10 @@ class Base_Elem
 Base_Elem::Base_Elem(int extNodeID)
 {
   this->extNodeID = extNodeID;
-  m.temp = 21;
+  m.temp = 0;
   m.alt = 0;
   m.pres = 0;
-  m.hum = 40;
+  m.hum = 0;
 
   rf12_initialize(myNodeID,freq,network);
   Serial.println("Initialized connection on RFM12B");
@@ -70,20 +70,14 @@ void Base_Elem::receiveData()
     
     if(rf12_recvDone())
     {
-      Serial.println(F("Received message .. "));
-      Serial.println(String("rf12_crc = ") + String(rf12_crc));
-      Serial.println(String("rf12_hdr = ") + String(rf12_hdr));
-      Serial.println(String("rf12_hdr & RF12_HDR_CTL= ") + String(rf12_hdr & RF12_HDR_CTL));
       if(rf12_crc == 0 && (rf12_hdr & RF12_HDR_CTL) == 0)
       {
-        Serial.println(F("The package matches the no. of bytes"));
+        
         int node_id = (rf12_hdr & 0x1F);
-        Serial.println(String("Node_id = ") + String(node_id));
+  
         if (node_id == extNodeID)
         {
-          Serial.print(F("The package came from: "));
-          Serial.print(node_id);
-          Serial.println();
+          
           m = *(MESAJ*) rf12_data;
           flag = true;
         }
@@ -173,7 +167,6 @@ void setup() {
   #endif
 
   base = new Base_Elem(extNodeID);
-
 }
 
 void loop() {

@@ -6,3 +6,18 @@ For FTDI232 be careful to select 3.3V when programming FTDI.
 
 https://harizanov.com/2012/04/rfm12b-and-arduino-ethernet-with-wiznet5100-chip/
 To make RFM12B work with ethernet
+
+UTFT
+
+
+LED->3v3
+VDD->3v3
+UTFT myGLCD(9, SDA, SCK, CS, RESET, A0);
+
+
+Links:
+	Display wiring - http://www.elecfreaks.com/5695.html
+	Display doc - http://www.elecfreaks.com/wiki/index.php?title=1.8%22_TFT_LCD:_TFT01-1.8#Programming
+				- http://blog.simtronyx.de/en/a-1-8-inch-tft-color-display-hy-1-8-spi-and-an-arduino/
+				- http://labs.domipheus.com/blog/cheap-1-8-spi-128x160-tft-module-arduino-wiring/
+	
