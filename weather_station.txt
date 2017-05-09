@@ -13,7 +13,7 @@ UTFT
 LED->3v3
 VDD->3v3
 UTFT myGLCD(9, SDA, SCK, CS, RESET, A0);
-
+memorysaver.h uncomment everything except #define DISABLE_ST7735	
 
 Links:
 	Display wiring - http://www.elecfreaks.com/5695.html

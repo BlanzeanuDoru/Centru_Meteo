@@ -2,9 +2,12 @@
 #include <Ethernet.h>
 
 #include <JeeLib.h>
+#include <UTFT.h>
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-char server[] = "weatherstation.wunderground.com";
+//char server[] = "weatherstation.wunderground.com";
+char server[] = "www.wunderground.com";
+
 
 #define myNodeID 20
 #define network 210
@@ -13,6 +16,8 @@ char server[] = "weatherstation.wunderground.com";
 
 IPAddress ip(192, 168, 0, 177);
 EthernetClient client;
+
+extern uint8_t SmallFont[];
 
 struct MESAJ
 {
@@ -27,15 +32,19 @@ class Base_Elem
   private:
     int extNodeID;
     MESAJ m;
+    UTFT LCD;
+    
   public:
     Base_Elem(int);
     void receiveData();
     void sendOverInternet();
     void printValues();
+    void displayValues();
 };
 
 Base_Elem::Base_Elem(int extNodeID)
 {
+  
   this->extNodeID = extNodeID;
   m.temp = 0;
   m.alt = 0;
@@ -56,6 +65,14 @@ Base_Elem::Base_Elem(int extNodeID)
     Serial.println(F("connecting..."));
   #endif
   client.connect(server, 80);
+
+  LCD = UTFT(9, 3, 4, 6, 8, 9);
+  LCD.InitLCD(PORTRAIT);
+  LCD.setFont(SmallFont);
+  LCD.clrScr();
+  LCD.setContrast(50);
+  LCD.fillScr(255, 255, 255);
+  LCD.setBackColor(255, 255, 255);
 }
 
 void Base_Elem::receiveData()
@@ -73,7 +90,7 @@ void Base_Elem::receiveData()
       if(rf12_crc == 0 && (rf12_hdr & RF12_HDR_CTL) == 0)
       {
         
-        int node_id = (rf12_hdr & 0x1F);
+        byte node_id = (rf12_hdr & 0x1F);
   
         if (node_id == extNodeID)
         {
@@ -108,6 +125,8 @@ void Base_Elem::sendOverInternet()
     String url = "/weatherstation/updateweatherstation.php?ID=IBUCHARE82&PASSWORD=iuiqtmdp&dateutc=now&action=updateraw";
     url += "&humidity=" + String(m.hum);
     url += "&tempf=" + String(9/5.0 * m.temp + 32.0);
+    url += "&baromin=" + String(m.pres * 29.92 / 101325);
+    url += "&dewptf=" + String(9/5.0 * (m.temp -  (100.0 - m.hum) /5.0) + 32.0);
     client.println("GET " + url + " HTTP/1.1");
     client.println("Host: " + String(server));
     client.println("Connection: close");
@@ -155,6 +174,21 @@ void Base_Elem::printValues() {
     #endif
 }
 
+void Base_Elem::displayValues() {
+  
+  LCD.setColor(255, 0, 0);
+  LCD.print(String("Temp: "), 0, 10, 0);
+  LCD.printNumI((long)m.temp, 50, 10, 0);
+  LCD.setColor(0, 255, 0);
+  LCD.print(String("Preasure: "), 0, 25, 0);
+  LCD.printNumI((long)m.pres, 70, 25, 0);
+  LCD.print(String("Humidity: "), 0, 45, 0);
+  LCD.printNumI((long)m.hum, 70, 45, 0);
+  LCD.setColor(0, 0, 255);
+  LCD.print(String("IP: "), 0, 70, 0);
+  LCD.print(String(Ethernet.localIP()), 25, 70,0);
+}
+
 Base_Elem * base;
 const int extNodeID = 10;
 
@@ -175,6 +209,7 @@ void loop() {
   delay(1000);
   base->sendOverInternet();
   base->printValues();
+  base->displayValues();
   delay(2000);
 }
 
