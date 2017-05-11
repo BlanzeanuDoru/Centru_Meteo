@@ -12,7 +12,7 @@ char server[] = "www.wunderground.com";
 #define myNodeID 20
 #define network 210
 #define freq RF12_433MHZ
-#define DEBUG 1
+#define DEBUG 0
 
 IPAddress ip(192, 168, 0, 177);
 EthernetClient client;
@@ -71,8 +71,19 @@ Base_Elem::Base_Elem(int extNodeID)
   LCD.setFont(SmallFont);
   LCD.clrScr();
   LCD.setContrast(50);
-  LCD.fillScr(255, 255, 255);
-  LCD.setBackColor(255, 255, 255);
+  LCD.fillScr(0, 0, 0);
+  
+  LCD.setColor(255, 0, 0);
+  LCD.setBackColor(0, 0, 0);
+  LCD.print(String("Waiting for data..."), 0, 50, 0);
+  
+  LCD.setColor(0, 255, 255);
+  LCD.print("Please turn on", 5, 90, 0);
+  LCD.print("the ext module", 7, 100,0);
+  receiveData();
+  LCD.clrScr();
+  LCD.setContrast(50);
+  LCD.fillScr(0, 0, 0);
 }
 
 void Base_Elem::receiveData()
@@ -174,20 +185,39 @@ void Base_Elem::printValues() {
     #endif
 }
 
+void drawTemp(UTFT LCD, float temp, int x, int y) {
+  LCD.setColor(0 , 255, 255);
+  LCD.drawCircle(x, y, 4);
+  LCD.fillCircle(x, y, 4);
+  LCD.drawRect(x-2, y-2, x+2, y-35);
+  LCD.printNumI((int)temp, x-30, y-35);
+  LCD.drawCircle(x-13, y-35, 2);
+  LCD.print("C", x-10, y-35);
+  LCD.fillRect(x-2, y-2, x+2, y - 33 * temp/50);
+}
+
+String DisplayAddress(IPAddress address)
+{
+ return String(address[0]) + "." + 
+        String(address[1]) + "." + 
+        String(address[2]) + "." + 
+        String(address[3]);
+}
+
 void Base_Elem::displayValues() {
   
-  LCD.setColor(255, 0, 0);
-  LCD.print(String("Temp: "), 0, 10, 0);
-  LCD.printNumI((long)m.temp, 50, 10, 0);
   LCD.setColor(0, 255, 0);
-  LCD.print(String("Preasure: "), 0, 25, 0);
-  LCD.printNumI((long)m.pres, 70, 25, 0);
-  LCD.print(String("Humidity: "), 0, 45, 0);
-  LCD.printNumI((long)m.hum, 70, 45, 0);
+  LCD.print(String("Preasure: "), 0, 15, 0);
+  LCD.print(String((long)(m.pres/100.0F)) + String("hPa"), 70, 15, 0);
+  LCD.print(String("Humidity: ") + String((long)m.hum) + String("%"), 0, 30, 0);
   LCD.setColor(0, 0, 255);
-  LCD.print(String("IP: "), 0, 70, 0);
-  LCD.print(String(Ethernet.localIP()), 25, 70,0);
+  LCD.print(String("IP: "), 0, 45, 0);
+  LCD.print(DisplayAddress(Ethernet.localIP()), 25, 45,0);
+  LCD.print(String("Altitude: ") + String((long)m.alt) + String("m"), 0, 65, 0);
+  drawTemp(LCD, m.temp, 64, 130);
 }
+
+
 
 Base_Elem * base;
 const int extNodeID = 10;
