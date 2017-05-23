@@ -251,7 +251,6 @@ void loop() {
   base->receiveData();
   delay(1000);
   base->sendOverInternet();
-  base->printValues();
   base->displayValues();
   delay(2000);
 }
