@@ -1,4 +1,5 @@
 #include <JeeLib.h>
+#include <Ports.h>
 
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
@@ -9,7 +10,12 @@
 #define freq RF12_433MHZ
 
 #define SEALEVELPRESSURE_HPA (1013.25)
-#define DEBUG 1
+#define DEBUG 0
+
+/*ISR(WDT_vect) { 
+  Sleepy::watchdogEvent(); 
+}*/
+
 
 struct MESAJ
 {
@@ -73,11 +79,8 @@ void Ext_Elem::sendData()
   {
     rf12_recvDone();
   }
-  Serial.print(String("Packet size: ") + String(sizeof(m)) + "\n");
-  Serial.println(String("rf12_crc = ") + String(rf12_crc));
-  Serial.println(String("rf12_hdr = ") + String(rf12_hdr));
-  Serial.println(String("rf12_hdr & RF12_HDR_CTL= ") + String(rf12_hdr & RF12_HDR_CTL));
   rf12_sendStart(0, &m, sizeof(m));
+  
 }
 
 void Ext_Elem::printValues() {
@@ -116,7 +119,12 @@ void loop()
 {
   myelem->aquireData();
   myelem->sendData();
-  myelem->printValues();
-  delay(5000);
+  delay(10000);
+  /*for(int i=0; i<2; i++) {
+    rf12_sleep(RF12_SLEEP);
+    Sleepy::loseSomeTime(60000);
+    rf12_sleep(RF12_WAKEUP);
+  }*/
+  
 }
 
