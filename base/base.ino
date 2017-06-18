@@ -33,6 +33,7 @@ class Base_Elem
     int extNodeID;
     MESAJ m;
     UTFT LCD;
+    unsigned long seconds;
     
   public:
     Base_Elem(int);
@@ -52,7 +53,7 @@ String DisplayAddress(IPAddress address)
 
 Base_Elem::Base_Elem(int extNodeID)
 {
-  
+  seconds = 0;
   this->extNodeID = extNodeID;
   m.temp = 0;
   m.alt = 0;
@@ -115,17 +116,19 @@ void Base_Elem::receiveData()
   bool flag = false;
   while(!flag)
   {
-    
+    if(seconds != 0)
+    {
+     LCD.setColor(0, 255, 0);
+     LCD.print(String("Last: ") + String(((millis() - seconds) / 1000L) / 60) + String("m ago"), 0, 45, 0); 
+    }
     if(rf12_recvDone())
     {
       if(rf12_crc == 0 && (rf12_hdr & RF12_HDR_CTL) == 0)
       {
-        
         byte node_id = (rf12_hdr & 0x1F);
-  
         if (node_id == extNodeID)
         {
-          
+          seconds = millis();
           m = *(MESAJ*) rf12_data;
           flag = true;
         }

@@ -113,7 +113,7 @@ void setup()
   myelem = new Ext_Elem(baseNodeID);
   #if DEBUG == 1
     Serial.begin(9600);
-  #endif 
+  #endif
   Sleepy::loseSomeTime(1000);
 }
 
@@ -121,7 +121,6 @@ void loop()
 {
   myelem->aquireData();
   myelem->sendData();
-
   if (!start)
   {
     start = true;
@@ -132,8 +131,6 @@ void loop()
        rf12_sleep(RF12_SLEEP);
        Sleepy::loseSomeTime(60000);
        rf12_sleep(RF12_WAKEUP);
-       Serial.println("Waited 1 minute");
-       Serial.flush();
     }
   }
  
