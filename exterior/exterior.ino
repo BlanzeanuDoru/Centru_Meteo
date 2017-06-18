@@ -12,9 +12,9 @@
 #define SEALEVELPRESSURE_HPA (1013.25)
 #define DEBUG 0
 
-/*ISR(WDT_vect) { 
+ISR(WDT_vect) { 
   Sleepy::watchdogEvent(); 
-}*/
+}
 
 
 struct MESAJ
@@ -106,6 +106,7 @@ void Ext_Elem::printValues() {
 
 Ext_Elem * myelem;
 const int baseNodeID = 11;
+bool start = false;
 
 void setup()
 {
@@ -113,18 +114,29 @@ void setup()
   #if DEBUG == 1
     Serial.begin(9600);
   #endif 
+  Sleepy::loseSomeTime(1000);
 }
 
 void loop()
 {
   myelem->aquireData();
   myelem->sendData();
-  delay(10000);
-  /*for(int i=0; i<2; i++) {
-    rf12_sleep(RF12_SLEEP);
-    Sleepy::loseSomeTime(60000);
-    rf12_sleep(RF12_WAKEUP);
-  }*/
+
+  if (!start)
+  {
+    start = true;
+  }
+  else 
+  {
+     for(int i=0; i<10; i++) {
+       rf12_sleep(RF12_SLEEP);
+       Sleepy::loseSomeTime(60000);
+       rf12_sleep(RF12_WAKEUP);
+       Serial.println("Waited 1 minute");
+       Serial.flush();
+    }
+  }
+ 
   
 }
 
