@@ -123,6 +123,7 @@ void Base_Elem::receiveData()
     }
     if(rf12_recvDone())
     {
+      Serial.println("Received");
       if(rf12_crc == 0 && (rf12_hdr & RF12_HDR_CTL) == 0)
       {
         byte node_id = (rf12_hdr & 0x1F);
@@ -150,22 +151,21 @@ void Base_Elem::sendOverInternet()
         return;
       }
   }
-  else
-  {
-    #if DEBUG == 1
-      Serial.println(F("connected"));
-    #endif
-    // Make a HTTP request:
-    String url = "/weatherstation/updateweatherstation.php?ID=IBUCHARE82&PASSWORD=iuiqtmdp&dateutc=now&action=updateraw";
-    url += "&humidity=" + String(m.hum);
-    url += "&tempf=" + String(9/5.0 * m.temp + 32.0);
-    url += "&baromin=" + String(m.pres * 29.92 / 101325);
-    url += "&dewptf=" + String(9/5.0 * (m.temp -  (100.0 - m.hum) /5.0) + 32.0);
-    client.println("GET " + url + " HTTP/1.1");
-    client.println("Host: " + String(server));
-    client.println("Connection: close");
-    client.println();
-  } 
+  
+  #if DEBUG == 1
+    Serial.println(F("connected"));
+  #endif
+  // Make a HTTP request:
+  String url = "/weatherstation/updateweatherstation.php?ID=IBUCHARE82&PASSWORD=iuiqtmdp&dateutc=now&action=updateraw";
+  url += "&humidity=" + String(m.hum);
+  url += "&tempf=" + String(9/5.0 * m.temp + 32.0);
+  url += "&baromin=" + String(m.pres * 29.92 / 101325);
+  url += "&dewptf=" + String(9/5.0 * (m.temp -  (100.0 - m.hum) /5.0) + 32.0);
+  client.println("GET " + url + " HTTP/1.1");
+  client.println("Host: " + String(server));
+  client.println("Connection: close");
+  client.println();
+ 
 
   while (client.available()) {
     char c = client.read();
@@ -252,7 +252,6 @@ void setup() {
 void loop() {
   
   base->receiveData();
-  delay(1000);
   base->sendOverInternet();
   base->displayValues();
   delay(2000);
