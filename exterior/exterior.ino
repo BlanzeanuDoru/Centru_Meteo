@@ -79,18 +79,25 @@ void loop()
   m.pres = bme.readPressure();
   m.alt = bme.readAltitude(SEALEVELPRESSURE_HPA);
   m.hum = bme.readHumidity();
+  printValues(m);
 
-  int i = 0;
-  while (!rf12_canSend() && i++ < 10)
+  for (int j = 0; j < 10; ++j)
   {
-    rf12_recvDone();
+    int i = 0;
+    while (!rf12_canSend() && i++ < 10)
+    {
+      rf12_recvDone();
+    }
+    //rf12_sendStart(0, &m, sizeof(m));
+    rf12_sendNow(0, &m, sizeof(m));
+    rf12_sendWait(0);
+    delay(1000);
   }
-  //rf12_sendStart(0, &m, sizeof(m));
-  rf12_sendNow(0, &m, sizeof(m));
-  rf12_sendWait(0);
+  
  
  for(int i=0; i<10; i++) {
     rf12_sleep(RF12_SLEEP);
+    //Sleepy::loseSomeTime(60000);
     Sleepy::loseSomeTime(60000);
     rf12_sleep(RF12_WAKEUP);
  }

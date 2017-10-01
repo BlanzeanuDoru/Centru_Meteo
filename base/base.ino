@@ -34,6 +34,7 @@ class Base_Elem
     MESAJ m;
     UTFT LCD;
     unsigned long seconds;
+    boolean initialized;
     
   public:
     Base_Elem(int);
@@ -41,6 +42,8 @@ class Base_Elem
     void sendOverInternet();
     void printValues();
     void displayValues();
+    boolean isInitialized() const;
+    void Init();
 };
 
 String DisplayAddress(IPAddress address)
@@ -53,6 +56,7 @@ String DisplayAddress(IPAddress address)
 
 Base_Elem::Base_Elem(int extNodeID)
 {
+  initialized = false;
   seconds = 0;
   this->extNodeID = extNodeID;
   m.temp = 0;
@@ -101,10 +105,20 @@ Base_Elem::Base_Elem(int extNodeID)
   LCD.setColor(0, 255, 255);
   LCD.print("Please turn on", 5, 100, 0);
   LCD.print("the ext module", 7, 110,0);
-  receiveData();
+}
+
+void Base_Elem::Init()
+{
+  if (initialized) return;
+  initialized = true;
   LCD.clrScr();
   LCD.setContrast(50);
   LCD.fillScr(0, 0, 0);
+}
+
+boolean Base_Elem::isInitialized() const
+{
+  return initialized;
 }
 
 void Base_Elem::receiveData()
@@ -161,6 +175,9 @@ void Base_Elem::sendOverInternet()
   url += "&tempf=" + String(9/5.0 * m.temp + 32.0);
   url += "&baromin=" + String(m.pres * 29.92 / 101325);
   url += "&dewptf=" + String(9/5.0 * (m.temp -  (100.0 - m.hum) /5.0) + 32.0);
+  #if DEBUG == 1
+    Serial.println(url);
+  #endif
   client.println("GET " + url + " HTTP/1.1");
   client.println("Host: " + String(server));
   client.println("Connection: close");
@@ -250,10 +267,13 @@ void setup() {
 }
 
 void loop() {
-  
   base->receiveData();
+  if (!base->isInitialized())
+  {
+    base->Init();
+  }
   base->sendOverInternet();
   base->displayValues();
-  delay(2000);
+  delay(500);
 }
 

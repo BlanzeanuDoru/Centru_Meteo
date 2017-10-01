@@ -44,3 +44,22 @@ add for BASE
 	inline static void initSS()    { DDRB  |=  _BV(2); };
     inline static void setSS()     { cli(); PORTB &= ~_BV(2); };
     inline static void resetSS()   { PORTB |=  _BV(2); sei(); };
+
+Connections:
+	Display:
+		- LED -> 3V3
+		- SCK -> PIN4
+		- SDA -> PIN3
+		- A0  -> PIN9
+		- RESET -> PIN8
+		- CS -> PIN6
+		- GND -> GND
+		- VCC -> 3V3
+	RF12B:
+		- 3V3 -> 3V3
+		- GND -> GND
+		- SCK -> PIN13
+		- SD0 -> PIN12
+		- SD1 -> PIN11
+		- SEL -> PIN5
+		- IRQ -> PIN2
