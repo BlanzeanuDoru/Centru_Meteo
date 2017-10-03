@@ -32,11 +32,11 @@ class Base_Elem
   private:
     int extNodeID;
     MESAJ m;
-    UTFT LCD;
     unsigned long seconds;
     boolean initialized;
     
   public:
+    UTFT LCD;
     Base_Elem(int);
     void receiveData();
     void sendOverInternet();
@@ -153,17 +153,42 @@ void Base_Elem::receiveData()
   
 }
 
+void ConnectEthernet(UTFT lcd, int i) {
+  if (i == 10)
+  {
+     return;
+  }
+  ++i;
+  int resp = client.connect(server, 80);
+  switch (resp)
+  {
+    case 1: lcd.print("Connected        ", 0, 55); break;
+    case -1: lcd.print("Timed Out       ", 0, 55); break;
+    case -2: lcd.print("Invalid server  ", 0, 55); break;
+    case -3: lcd.print("Truncated       ", 0, 55); break;
+    case -4: lcd.print("Invalid response", 0, 55); break;
+  }
+  if (!resp) {
+    client.stop();
+    delay(3000);
+    if (Ethernet.begin(mac) == 0)  
+    {
+      lcd.print("DHCP conn unsucc", 0, 55);
+      Ethernet.begin(mac, ip);
+    }
+    else
+    {
+      lcd.print("DHCP conn succ", 0, 55);
+    }
+    ConnectEthernet(lcd, i);
+  } 
+} 
+
 void Base_Elem::sendOverInternet()
 {
   if(!client.connected())
   {
-      if(!client.connect(server, 80))
-      {
-        #if DEBUG == 1
-          Serial.println(F("connection failed"));
-        #endif
-        return;
-      }
+      ConnectEthernet(LCD, 0);
   }
   
   #if DEBUG == 1
@@ -271,7 +296,9 @@ void loop() {
   if (!base->isInitialized())
   {
     base->Init();
+    
   }
+  byte resp = Ethernet.maintain();
   base->sendOverInternet();
   base->displayValues();
   delay(500);
